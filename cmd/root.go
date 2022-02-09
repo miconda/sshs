@@ -21,10 +21,29 @@ var rootCmd = &cobra.Command{
 	Use:     "sshs",
 	Short:   "ssh clients manager",
 	Version: Version,
-	Run:     run,
+	Run:     runRoot,
 }
 
-func run(cmd *cobra.Command, args []string) {
+func init() {
+	flags := rootCmd.Flags()
+	flags.StringP("search", "s", "", "Host search filter")
+	flags.StringP("config", "c", "~/.ssh/config", "SSH config file")
+	flags.BoolP("proxy", "p", false, "Display full ProxyCommand")
+
+	viper.SetDefault("author", "quantumsheep <nathanael.dmc@outlook.fr>")
+	viper.SetDefault("license", "MIT")
+
+	rootCmd.AddCommand(generateCmd)
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func runRoot(cmd *cobra.Command, args []string) {
 	flags := cmd.Flags()
 
 	sshConfigPath := "~/.ssh/config"
@@ -67,21 +86,4 @@ func run(cmd *cobra.Command, args []string) {
 	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
 		panic(err)
 	}
-}
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-func init() {
-	flags := rootCmd.PersistentFlags()
-	flags.StringP("search", "s", "", "Host search filter")
-	flags.StringP("config", "c", "~/.ssh/config", "SSH config file")
-	flags.BoolP("proxy", "p", false, "Display full ProxyCommand")
-
-	viper.SetDefault("author", "quantumsheep <nathanael.dmc@outlook.fr>")
-	viper.SetDefault("license", "MIT")
 }
